@@ -6,7 +6,10 @@ export const mockInstance = <T>(
 	serviceClass: Constructable<T>,
 	data: DeepPartial<T> | undefined = undefined,
 ) => {
-	const instance = mock<T>(data);
-	Container.set(serviceClass, instance);
+	// Type assertion needed due to ts-essentials version mismatch between
+	// this package (v10.1.1) and jest-mock-extended (v7.0.3)
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const instance = mock<T>(data as any);
+	Container.set(serviceClass, instance as T);
 	return instance;
 };

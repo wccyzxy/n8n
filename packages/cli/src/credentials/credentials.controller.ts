@@ -259,6 +259,8 @@ export class CredentialsController {
 		}
 
 		newCredentialData.isResolvable = body.isResolvable ?? credential.isResolvable;
+		newCredentialData.tenantId = body.tenantId ?? credential.tenantId ?? '';
+		newCredentialData.isTenantDynamic = body.isTenantDynamic ?? credential.isTenantDynamic;
 		const responseData = await this.credentialsService.update(credentialId, newCredentialData);
 
 		if (responseData === null) {

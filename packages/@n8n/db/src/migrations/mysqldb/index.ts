@@ -128,6 +128,8 @@ import { AddResolvableFieldsToCredentials1765459448000 } from '../common/1765459
 import { AddIconToAgentTable1765788427674 } from '../common/1765788427674-AddIconToAgentTable';
 import { AddAgentIdForeignKeys1765886667897 } from '../common/1765886667897-AddAgentIdForeignKeys';
 import { AddWorkflowVersionIdToExecutionData1765892199653 } from '../common/1765892199653-AddVersionIdToExecutionData';
+import { AddTenantIdToCredentials1767208448479 } from '../common/1767208448479-AddTenantIdToCredentials';
+import { AddIsTenantDynamicToCredentials1767430401449 } from '../common/1767430401449-AddIsTenantDynamicToCredentials';
 import type { Migration } from '../migration-types';
 
 export const mysqlMigrations: Migration[] = [
@@ -261,4 +263,6 @@ export const mysqlMigrations: Migration[] = [
 	AddIconToAgentTable1765788427674,
 	AddAgentIdForeignKeys1765886667897,
 	AddWorkflowVersionIdToExecutionData1765892199653,
+	AddTenantIdToCredentials1767208448479,
+	AddIsTenantDynamicToCredentials1767430401449,
 ];

@@ -119,6 +119,7 @@ const requiredCredentials = ref(false); // Are credentials required or optional 
 const contentRef = ref<HTMLDivElement>();
 const isSharedGlobally = ref(false);
 const isResolvable = ref(false);
+const isTenantDynamic = ref(false);
 
 const activeNodeType = computed(() => {
 	const activeNode = ndvStore.activeNode;
@@ -559,6 +560,11 @@ async function loadCurrentCredential() {
 			'isResolvable' in currentCredentials && typeof currentCredentials.isResolvable === 'boolean'
 				? currentCredentials.isResolvable
 				: false;
+		isTenantDynamic.value =
+			'isTenantDynamic' in currentCredentials &&
+			typeof currentCredentials.isTenantDynamic === 'boolean'
+				? currentCredentials.isTenantDynamic
+				: false;
 	} catch (error) {
 		toast.showError(
 			error,
@@ -729,6 +735,7 @@ async function saveCredential(): Promise<ICredentialsResponse | null> {
 		data: data as unknown as ICredentialDataDecryptedObject,
 		isGlobal: isSharedGlobally.value,
 		isResolvable: isResolvable.value,
+		isTenantDynamic: isTenantDynamic.value,
 	};
 
 	if (
@@ -1322,6 +1329,35 @@ const { width } = useElementSize(credNameRef);
 										)
 									}}
 								</N8nLink>
+							</N8nText>
+						</div>
+					</div>
+					<div
+						v-if="(credentialPermissions.create && isNewCredential) || credentialPermissions.update"
+						:class="$style.dynamicCredentials"
+						data-test-id="tenant-dynamic-credentials-section"
+					>
+						<div :class="$style.dynamicCredentialsHeader">
+							<N8nText size="medium" weight="bold">
+								{{ i18n.baseText('credentialEdit.credentialConfig.tenantDynamic.title') }}
+							</N8nText>
+							<N8nTooltip placement="top">
+								<template #content>
+									<div>
+										{{ i18n.baseText('credentialEdit.credentialConfig.tenantDynamic.infoTip') }}
+									</div>
+								</template>
+								<N8nIcon icon="circle-help" size="small" />
+							</N8nTooltip>
+						</div>
+						<ElSwitch
+							v-model="isTenantDynamic"
+							data-test-id="tenant-dynamic-credentials-toggle"
+							@update:model-value="() => (hasUnsavedChanges = true)"
+						/>
+						<div :class="$style.dynamicCredentialsDescription">
+							<N8nText :tag="'div'" size="small" color="text-light">
+								{{ i18n.baseText('credentialEdit.credentialConfig.tenantDynamic.description') }}
 							</N8nText>
 						</div>
 					</div>

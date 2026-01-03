@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Agent } from 'https';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as qs from 'querystring';
 
 import type { ClientOAuth2TokenData } from './client-oauth2-token';
@@ -47,8 +48,6 @@ export class ResponseError extends Error {
 		super(message);
 	}
 }
-
-const sslIgnoringAgent = new Agent({ rejectUnauthorized: false });
 
 /**
  * Construct an object that can handle the multiple OAuth 2.0 flows.
@@ -98,9 +97,14 @@ export class ClientOAuth2 {
 			validateStatus: (status) => status < 500,
 		};
 
-		if (options.ignoreSSLIssues) {
-			requestConfig.httpsAgent = sslIgnoringAgent;
-		}
+		// // Configure proxy agents - use hardcoded proxy for OAuth requests
+		// const proxyUrl = 'http://127.0.0.1:10809';
+		// const urlObj = new URL(url);
+		// if (urlObj.protocol === 'https:') {
+		// 	requestConfig.httpsAgent = new HttpsProxyAgent(proxyUrl);
+		// } else {
+		// 	requestConfig.httpAgent = new HttpProxyAgent(proxyUrl);
+		// }
 
 		const response = await axios.request(requestConfig);
 

@@ -150,6 +150,7 @@ export interface ICredentialsDecrypted<T extends object = ICredentialDataDecrypt
 	sharedWithProjects?: ProjectSharingData[];
 	isGlobal?: boolean;
 	isResolvable?: boolean;
+	isTenantDynamic?: boolean;
 }
 
 export interface ICredentialsEncrypted {

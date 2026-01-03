@@ -22,7 +22,9 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "axios": "catalog:"
+    "axios": "catalog:",
+    "http-proxy-agent": "catalog:",
+    "https-proxy-agent": "catalog:"
   },
   "devDependencies": {
     "@n8n/typescript-config": "workspace:*"

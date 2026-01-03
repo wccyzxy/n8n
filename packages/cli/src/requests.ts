@@ -74,6 +74,8 @@ export declare namespace CredentialRequest {
 		isManaged?: boolean;
 		isGlobal?: boolean;
 		isResolvable?: boolean;
+		tenantId?: string;
+		isTenantDynamic?: boolean;
 	}>;
 
 	type Get = AuthenticatedRequest<{ credentialId: string }, {}, {}, Record<string, string>>;

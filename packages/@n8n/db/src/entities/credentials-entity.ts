@@ -25,6 +25,16 @@ export class CredentialsEntity extends WithTimestampsAndStringId implements ICre
 	})
 	type: string;
 
+	/**
+	 * Tenant ID for multi-tenant support. Allows credentials to be associated
+	 * with a tenant without requiring a user account in n8n.
+	 */
+	@Index()
+	@Column({
+		length: 128,
+	})
+	tenantId: string;
+
 	@OneToMany('SharedCredentials', 'credentials')
 	shared: SharedCredentials[];
 
@@ -41,6 +51,12 @@ export class CredentialsEntity extends WithTimestampsAndStringId implements ICre
 	 */
 	@Column({ default: false })
 	isGlobal: boolean;
+
+	/**
+	 * Whether the credential use tenant dynamic credentials.
+	 */
+	@Column({ default: false })
+	isTenantDynamic: boolean;
 
 	/**
 	 * Whether the credential can be dynamically resolved by a resolver.

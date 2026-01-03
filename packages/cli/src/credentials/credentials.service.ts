@@ -922,6 +922,8 @@ export class CredentialsService {
 			...encryptedCredential,
 			isManaged: opts.isManaged,
 			isResolvable: opts.isResolvable ?? false,
+			isTenantDynamic: opts.isTenantDynamic ?? false,
+			tenantId: opts.tenantId ?? '',
 		});
 
 		const { shared, ...credential } = await this.save(

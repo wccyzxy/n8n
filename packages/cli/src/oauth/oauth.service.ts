@@ -49,6 +49,7 @@ import {
 	type CsrfState,
 	type OAuth1CredentialData,
 } from './types';
+import { Time } from '@n8n/constants';
 import { CredentialStoreMetadata } from '@/credentials/dynamic-credential-storage.interface';
 import { DynamicCredentialsProxy } from '@/credentials/dynamic-credentials-proxy';
 
@@ -214,6 +215,15 @@ export class OauthService {
 
 		// user validation not required for dynamic credentials
 		if (decryptedState.origin === 'dynamic-credential') {
+			return {
+				...decoded,
+				...decryptedState,
+			};
+		}
+
+		// Skip user validation for external credentials (identified by tenantId in state)
+		// External credentials are created via external API and don't have userId
+		if (decryptedState.tenantId) {
 			return {
 				...decoded,
 				...decryptedState,

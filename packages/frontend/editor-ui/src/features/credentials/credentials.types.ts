@@ -16,6 +16,7 @@ export interface ICredentialsResponse extends ICredentialsEncrypted {
 	isManaged: boolean;
 	isGlobal?: boolean;
 	isResolvable?: boolean;
+	isTenantDynamic?: boolean;
 }
 
 export interface IUsedCredential {
@@ -35,6 +36,7 @@ export interface ICredentialsBase {
 export interface ICredentialsDecryptedResponse extends ICredentialsBase, ICredentialsDecrypted {
 	id: string;
 	isResolvable?: boolean;
+	isTenantDynamic?: boolean;
 }
 
 export interface ICredentialTypeMap {
