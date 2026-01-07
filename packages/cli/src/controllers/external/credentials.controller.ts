@@ -18,6 +18,12 @@ export declare namespace CredentialRequest {
 	>;
 	type GetAuth = APIRequest<{}, {}, {}, { tenantId: string; credentialType: string }>;
 	type GetToken = APIRequest<{}, {}, {}, { tenantId: string; credentialType: string }>;
+	type RefreshToken = APIRequest<
+		{},
+		{ tenantId: string; credentialType: string },
+		{ tenantId: string; credentialType: string },
+		Record<string, string>
+	>;
 }
 
 @RestController('/external/credentials')
@@ -160,5 +166,24 @@ export class ExternalCredentialsController {
 			throw new Error('tenantId and credentialType are required');
 		}
 		return await this.credentialsService.getOrCreateTenantCredential(tenantId, credentialType);
+	}
+
+	/**
+	 * Refresh OAuth2 token for a tenant credential
+	 * Internal use only - authentication is skipped
+	 * POST /external/credentials/refresh-token
+	 */
+	@Post('/refresh-token', { skipAuth: true })
+	async refreshToken(req: CredentialRequest.RefreshToken): Promise<{ token: unknown }> {
+		const requestBody = req.body;
+		if (!requestBody) {
+			throw new Error('Request body is required');
+		}
+		const { tenantId, credentialType } = requestBody;
+		if (!tenantId || !credentialType) {
+			throw new Error('tenantId and credentialType are required');
+		}
+		const tokenData = await this.credentialsService.refreshToken(tenantId, credentialType);
+		return { token: tokenData };
 	}
 }
