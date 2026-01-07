@@ -180,6 +180,7 @@ export class ExternalCredentialsService {
 			type: templateCredential.type,
 			data: encryptedData.data,
 			tenantId,
+			parent: templateCredential.id, // Set parent to the template credential ID
 			isManaged: templateCredential.isManaged ?? false,
 			isGlobal: templateCredential.isGlobal ?? false,
 			isTenantDynamic: false,

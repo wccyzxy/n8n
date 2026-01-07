@@ -128,6 +128,7 @@ import { AddWorkflowVersionIdToExecutionData1765892199653 } from '../common/1765
 import { AddWorkflowPublishScopeToProjectRoles1766064542000 } from '../common/1766064542000-AddWorkflowPublishScopeToProjectRoles';
 import { AddTenantIdToCredentials1767208448479 } from '../common/1767208448479-AddTenantIdToCredentials';
 import { AddIsTenantDynamicToCredentials1767430401449 } from '../common/1767430401449-AddIsTenantDynamicToCredentials';
+import { AddParentToCredentials1767832800000 } from '../common/1767832800000-AddParentToCredentials';
 import type { Migration } from '../migration-types';
 
 const sqliteMigrations: Migration[] = [
@@ -261,6 +262,7 @@ const sqliteMigrations: Migration[] = [
 	AddChatMessageIndices1766068346315,
 	AddTenantIdToCredentials1767208448479,
 	AddIsTenantDynamicToCredentials1767430401449,
+	AddParentToCredentials1767832800000,
 ];
 
 export { sqliteMigrations };

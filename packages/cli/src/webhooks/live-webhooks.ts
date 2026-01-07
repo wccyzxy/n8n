@@ -21,6 +21,7 @@ import * as WebhookHelpers from '@/webhooks/webhook-helpers';
 import { WebhookService } from '@/webhooks/webhook.service';
 import * as WorkflowExecuteAdditionalData from '@/workflow-execute-additional-data';
 import { WorkflowStaticDataService } from '@/workflows/workflow-static-data.service';
+import { ExternalWorkflowsService } from '@/workflows/external-workflows.service';
 
 /**
  * Service for handling the execution of live webhooks, i.e. webhooks
@@ -35,6 +36,7 @@ export class LiveWebhooks implements IWebhookManager {
 		private readonly webhookService: WebhookService,
 		private readonly workflowRepository: WorkflowRepository,
 		private readonly workflowStaticDataService: WorkflowStaticDataService,
+		private readonly externalWorkflowsService: ExternalWorkflowsService,
 	) {}
 
 	async getWebhookMethods(path: string) {
@@ -122,6 +124,36 @@ export class LiveWebhooks implements IWebhookManager {
 			connections,
 		};
 
+		// Get all tenants that have all required credentials for this workflow
+		const tenantsWithCompleteCredentials =
+			await this.externalWorkflowsService.getTenantsWithCompleteCredentials(webhook.workflowId);
+
+		// Trigger workflow execution for each tenant that has complete credentials
+		// Execute asynchronously so webhook response is not blocked
+		if (tenantsWithCompleteCredentials.length > 0) {
+			this.logger.info(
+				`Found ${tenantsWithCompleteCredentials.length} tenants with complete credentials for workflow ${webhook.workflowId}, triggering executions`,
+			);
+
+			// Execute workflow for each tenant asynchronously
+			// Use void to fire and forget, so webhook response is not blocked
+			for (const tenantId of tenantsWithCompleteCredentials) {
+				void this.externalWorkflowsService
+					.runWorkflow(webhook.workflowId, tenantId)
+					.catch((error) => {
+						this.logger.error(
+							`Failed to execute workflow ${webhook.workflowId} for tenant ${tenantId}: ${error}`,
+						);
+					});
+			}
+		} else {
+			this.logger.debug(
+				`No tenants with complete credentials found for workflow ${webhook.workflowId}`,
+			);
+		}
+
+		// Create Workflow object with original credentials for the main webhook execution
+		// This ensures the webhook response is sent correctly
 		const workflow = new Workflow({
 			id: webhook.workflowId,
 			name: workflowData.name,

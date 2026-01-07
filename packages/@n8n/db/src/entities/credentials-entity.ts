@@ -77,6 +77,14 @@ export class CredentialsEntity extends WithTimestampsAndStringId implements ICre
 	@Column({ type: 'varchar', nullable: true })
 	resolverId: string | null;
 
+	/**
+	 * ID of the parent credential that this tenant credential was created from.
+	 * Used to track the relationship between tenant credentials and their template credentials.
+	 */
+	@Index()
+	@Column({ type: 'varchar', length: 36, nullable: true })
+	parent: string | null;
+
 	toJSON() {
 		const { shared, ...rest } = this;
 		return rest;

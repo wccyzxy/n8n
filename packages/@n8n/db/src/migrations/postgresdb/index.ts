@@ -133,6 +133,7 @@ import { AddWorkflowPublishScopeToProjectRoles1766064542000 } from '../common/17
 import { AddChatMessageIndices1766068346315 } from '../common/1766068346315-AddChatMessageIndices';
 import { AddTenantIdToCredentials1767208448479 } from '../common/1767208448479-AddTenantIdToCredentials';
 import { AddIsTenantDynamicToCredentials1767430401449 } from '../common/1767430401449-AddIsTenantDynamicToCredentials';
+import { AddParentToCredentials1767832800000 } from '../common/1767832800000-AddParentToCredentials';
 import type { Migration } from '../migration-types';
 
 export const postgresMigrations: Migration[] = [
@@ -271,4 +272,5 @@ export const postgresMigrations: Migration[] = [
 	AddChatMessageIndices1766068346315,
 	AddTenantIdToCredentials1767208448479,
 	AddIsTenantDynamicToCredentials1767430401449,
+	AddParentToCredentials1767832800000,
 ];

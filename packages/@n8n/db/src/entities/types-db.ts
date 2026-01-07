@@ -88,6 +88,7 @@ export interface ICredentialsDb extends ICredentialsBase, ICredentialsEncrypted 
 	name: string;
 	shared?: SharedCredentials[];
 	tenantId: string;
+	parent?: string | null;
 	isGlobal?: boolean;
 	isResolvable?: boolean;
 	isTenantDynamic?: boolean;

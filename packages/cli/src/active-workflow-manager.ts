@@ -61,6 +61,7 @@ import { WebhookService } from '@/webhooks/webhook.service';
 import * as WorkflowExecuteAdditionalData from '@/workflow-execute-additional-data';
 import { WorkflowExecutionService } from '@/workflows/workflow-execution.service';
 import { WorkflowStaticDataService } from '@/workflows/workflow-static-data.service';
+import { ExternalWorkflowsService } from '@/workflows/external-workflows.service';
 import { formatWorkflow } from '@/workflows/workflow.formatter';
 
 interface QueuedActivation {
@@ -88,6 +89,7 @@ export class ActiveWorkflowManager {
 		private readonly workflowStaticDataService: WorkflowStaticDataService,
 		private readonly activeWorkflowsService: ActiveWorkflowsService,
 		private readonly workflowExecutionService: WorkflowExecutionService,
+		private readonly externalWorkflowsService: ExternalWorkflowsService,
 		private readonly instanceSettings: InstanceSettings,
 		private readonly publisher: Publisher,
 		private readonly workflowsConfig: WorkflowsConfig,
@@ -343,7 +345,7 @@ export class ActiveWorkflowManager {
 		activation: WorkflowActivateMode,
 	): IGetExecuteTriggerFunctions {
 		return (workflow: Workflow, node: INode) => {
-			const emit = (
+			const emit = async (
 				data: INodeExecutionData[][],
 				responsePromise?: IDeferredPromise<IExecuteResponsePromiseData>,
 				donePromise?: IDeferredPromise<IRun | undefined>,
@@ -351,6 +353,30 @@ export class ActiveWorkflowManager {
 				this.logger.debug(`Received trigger for workflow "${workflow.name}"`);
 				void this.workflowStaticDataService.saveStaticData(workflow);
 
+				// Get all tenants that have all required credentials for this workflow
+				// and trigger workflow execution for each tenant
+				const tenantsWithCompleteCredentials =
+					await this.externalWorkflowsService.getTenantsWithCompleteCredentials(workflowData.id);
+
+				if (tenantsWithCompleteCredentials.length > 0) {
+					this.logger.info(
+						`Found ${tenantsWithCompleteCredentials.length} tenants with complete credentials for workflow ${workflowData.id}, triggering executions`,
+					);
+
+					// Execute workflow for each tenant asynchronously
+					// Use void to fire and forget, so original execution is not blocked
+					for (const tenantId of tenantsWithCompleteCredentials) {
+						void this.externalWorkflowsService
+							.runWorkflow(workflowData.id, tenantId)
+							.catch((error) => {
+								this.logger.error(
+									`Failed to execute workflow ${workflowData.id} for tenant ${tenantId}: ${error}`,
+								);
+							});
+					}
+				}
+
+				// Execute the original workflow (for backward compatibility and response handling)
 				const executePromise = this.workflowExecutionService.runWorkflow(
 					workflowData,
 					node,
