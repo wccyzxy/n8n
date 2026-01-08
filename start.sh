@@ -35,9 +35,9 @@ if ! command -v nvm &> /dev/null; then
     fi
 fi
 
-# Use nvm to set Node.js version to 20
-echo -e "${YELLOW}Setting Node.js version to 20...${NC}"
-nvm use 20 || nvm install 20 && nvm use 20
+# Use nvm to set Node.js version to 22
+echo -e "${YELLOW}Setting Node.js version to 22...${NC}"
+nvm use 22 || nvm install 22 && nvm use 22
 
 # Verify Node.js version
 NODE_VERSION=$(node -v)
