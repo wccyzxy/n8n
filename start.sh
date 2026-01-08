@@ -60,10 +60,20 @@ fi
 echo -e "${YELLOW}Installing dependencies with pnpm...${NC}"
 pnpm install
 
-# Build the project with 3GB memory limit
-echo -e "${YELLOW}Building n8n (max memory: 3GB)...${NC}"
+# Build the project with 3GB memory limit and 3 CPU cores
+echo -e "${YELLOW}Building n8n (max memory: 3GB, max CPUs: 3)...${NC}"
 export NODE_OPTIONS="--max-old-space-size=3072"
-pnpm run build
+
+# Limit CPU usage to 3 cores using taskset if available, otherwise use turbo concurrency
+if command -v taskset &> /dev/null; then
+    # Use taskset to bind to first 3 CPU cores (0, 1, 2)
+    echo -e "${YELLOW}Using taskset to limit to 3 CPU cores...${NC}"
+    taskset -c 0-2 pnpm run build
+else
+    # Fallback: limit turbo concurrency to 3 tasks
+    echo -e "${YELLOW}Limiting turbo concurrency to 3 tasks...${NC}"
+    pnpm run build -- --concurrency=3
+fi
 
 # Check if PM2 process already exists
 if pm2 list | grep -q "n8n"; then
