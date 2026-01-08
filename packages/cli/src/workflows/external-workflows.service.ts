@@ -356,4 +356,37 @@ export class ExternalWorkflowsService {
 
 		return tenantsWithCompleteCredentials;
 	}
+
+	/**
+	 * Check if a workflow has any tenant dynamic credentials
+	 * @param workflowId - The ID of the workflow
+	 * @returns true if the workflow has at least one credential with isTenantDynamic=true
+	 */
+	async hasTenantDynamicCredentials(workflowId: string): Promise<boolean> {
+		// Get workflow by ID with active version
+		const workflow = await this.workflowRepository.findOne({
+			where: { id: workflowId },
+			relations: ['activeVersion'],
+		});
+
+		if (!workflow) {
+			return false;
+		}
+
+		// Use active version nodes if available, otherwise use draft
+		const nodes = workflow.activeVersion?.nodes ?? workflow.nodes;
+
+		// Extract credential IDs from workflow nodes
+		const credentialIds = this.extractCredentialIdsFromNodes(nodes);
+
+		if (credentialIds.length === 0) {
+			return false;
+		}
+
+		// Get credentials by IDs
+		const credentials = await this.credentialsRepository.getManyByIds(credentialIds);
+
+		// Check if any credential has isTenantDynamic=true
+		return credentials.some((credential) => credential.isTenantDynamic === true);
+	}
 }

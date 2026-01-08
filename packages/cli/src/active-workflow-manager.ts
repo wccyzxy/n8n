@@ -353,30 +353,55 @@ export class ActiveWorkflowManager {
 				this.logger.debug(`Received trigger for workflow "${workflow.name}"`);
 				void this.workflowStaticDataService.saveStaticData(workflow);
 
-				// Get all tenants that have all required credentials for this workflow
-				// and trigger workflow execution for each tenant
-				const tenantsWithCompleteCredentials =
-					await this.externalWorkflowsService.getTenantsWithCompleteCredentials(workflowData.id);
+				// Check if workflow has tenant dynamic credentials
+				const hasTenantDynamicCreds =
+					await this.externalWorkflowsService.hasTenantDynamicCredentials(workflowData.id);
 
-				if (tenantsWithCompleteCredentials.length > 0) {
-					this.logger.info(
-						`Found ${tenantsWithCompleteCredentials.length} tenants with complete credentials for workflow ${workflowData.id}, triggering executions`,
-					);
+				if (hasTenantDynamicCreds) {
+					// If workflow has tenant dynamic credentials, only execute for tenants
+					// Get all tenants that have all required credentials for this workflow
+					const tenantsWithCompleteCredentials =
+						await this.externalWorkflowsService.getTenantsWithCompleteCredentials(workflowData.id);
 
-					// Execute workflow for each tenant asynchronously
-					// Use void to fire and forget, so original execution is not blocked
-					for (const tenantId of tenantsWithCompleteCredentials) {
-						void this.externalWorkflowsService
-							.runWorkflow(workflowData.id, tenantId)
-							.catch((error) => {
-								this.logger.error(
-									`Failed to execute workflow ${workflowData.id} for tenant ${tenantId}: ${error}`,
-								);
-							});
+					if (tenantsWithCompleteCredentials.length > 0) {
+						this.logger.info(
+							`Workflow ${workflowData.id} has tenant dynamic credentials. Executing for ${tenantsWithCompleteCredentials.length} tenants only, skipping original workflow execution`,
+						);
+
+						// Execute workflow for each tenant asynchronously
+						for (const tenantId of tenantsWithCompleteCredentials) {
+							void this.externalWorkflowsService
+								.runWorkflow(workflowData.id, tenantId)
+								.catch((error) => {
+									this.logger.error(
+										`Failed to execute workflow ${workflowData.id} for tenant ${tenantId}: ${error}`,
+									);
+								});
+						}
+
+						// If there's a donePromise, resolve it immediately since we're not executing the original workflow
+						if (donePromise) {
+							donePromise.resolve(undefined);
+						}
+
+						// Don't execute the original workflow
+						return;
+					} else {
+						this.logger.warn(
+							`Workflow ${workflowData.id} has tenant dynamic credentials but no tenants with complete credentials found. Skipping execution.`,
+						);
+
+						// If there's a donePromise, resolve it immediately since we're not executing
+						if (donePromise) {
+							donePromise.resolve(undefined);
+						}
+
+						// Don't execute the original workflow
+						return;
 					}
 				}
 
-				// Execute the original workflow (for backward compatibility and response handling)
+				// If workflow doesn't have tenant dynamic credentials, execute normally
 				const executePromise = this.workflowExecutionService.runWorkflow(
 					workflowData,
 					node,

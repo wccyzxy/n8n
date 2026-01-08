@@ -124,36 +124,46 @@ export class LiveWebhooks implements IWebhookManager {
 			connections,
 		};
 
-		// Get all tenants that have all required credentials for this workflow
-		const tenantsWithCompleteCredentials =
-			await this.externalWorkflowsService.getTenantsWithCompleteCredentials(webhook.workflowId);
+		// Check if workflow has tenant dynamic credentials
+		const hasTenantDynamicCreds = await this.externalWorkflowsService.hasTenantDynamicCredentials(
+			webhook.workflowId,
+		);
 
-		// Trigger workflow execution for each tenant that has complete credentials
-		// Execute asynchronously so webhook response is not blocked
-		if (tenantsWithCompleteCredentials.length > 0) {
-			this.logger.info(
-				`Found ${tenantsWithCompleteCredentials.length} tenants with complete credentials for workflow ${webhook.workflowId}, triggering executions`,
-			);
+		if (hasTenantDynamicCreds) {
+			// If workflow has tenant dynamic credentials, only execute for tenants
+			// Get all tenants that have all required credentials for this workflow
+			const tenantsWithCompleteCredentials =
+				await this.externalWorkflowsService.getTenantsWithCompleteCredentials(webhook.workflowId);
 
-			// Execute workflow for each tenant asynchronously
-			// Use void to fire and forget, so webhook response is not blocked
-			for (const tenantId of tenantsWithCompleteCredentials) {
-				void this.externalWorkflowsService
-					.runWorkflow(webhook.workflowId, tenantId)
-					.catch((error) => {
-						this.logger.error(
-							`Failed to execute workflow ${webhook.workflowId} for tenant ${tenantId}: ${error}`,
-						);
-					});
+			if (tenantsWithCompleteCredentials.length > 0) {
+				this.logger.info(
+					`Workflow ${webhook.workflowId} has tenant dynamic credentials. Executing for ${tenantsWithCompleteCredentials.length} tenants only, skipping original webhook execution`,
+				);
+
+				// Execute workflow for each tenant asynchronously
+				for (const tenantId of tenantsWithCompleteCredentials) {
+					void this.externalWorkflowsService
+						.runWorkflow(webhook.workflowId, tenantId)
+						.catch((error) => {
+							this.logger.error(
+								`Failed to execute workflow ${webhook.workflowId} for tenant ${tenantId}: ${error}`,
+							);
+						});
+				}
+			} else {
+				this.logger.warn(
+					`Workflow ${webhook.workflowId} has tenant dynamic credentials but no tenants with complete credentials found. Skipping execution.`,
+				);
 			}
-		} else {
-			this.logger.debug(
-				`No tenants with complete credentials found for workflow ${webhook.workflowId}`,
-			);
+
+			// Return a default response without executing the original workflow
+			return {
+				noWebhookResponse: true,
+			};
 		}
 
+		// If workflow doesn't have tenant dynamic credentials, execute normally
 		// Create Workflow object with original credentials for the main webhook execution
-		// This ensures the webhook response is sent correctly
 		const workflow = new Workflow({
 			id: webhook.workflowId,
 			name: workflowData.name,
@@ -192,7 +202,7 @@ export class LiveWebhooks implements IWebhookManager {
 			void WebhookHelpers.executeWebhook(
 				workflow,
 				webhookData,
-				activeWorkflowData, // Use activeWorkflowData instead of workflowData
+				activeWorkflowData,
 				workflowStartNode,
 				executionMode,
 				undefined,
