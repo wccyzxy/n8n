@@ -60,8 +60,9 @@ fi
 echo -e "${YELLOW}Installing dependencies with pnpm...${NC}"
 pnpm install
 
-# Build the project
-echo -e "${YELLOW}Building n8n...${NC}"
+# Build the project with 3GB memory limit
+echo -e "${YELLOW}Building n8n (max memory: 3GB)...${NC}"
+export NODE_OPTIONS="--max-old-space-size=3072"
 pnpm run build
 
 # Check if PM2 process already exists
