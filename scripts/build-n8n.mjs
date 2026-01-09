@@ -37,6 +37,16 @@ const config = {
 // Define backend patches to keep during deployment
 const PATCHES_TO_KEEP = ['pdfjs-dist', 'pkce-challenge', 'bull'];
 
+// Set Node.js memory limit if not already set
+// Default to 4GB (4096MB), can be overridden via NODE_OPTIONS or N8N_BUILD_MEMORY_LIMIT
+if (!process.env.NODE_OPTIONS) {
+	const memoryLimit = process.env.N8N_BUILD_MEMORY_LIMIT || '4096';
+	process.env.NODE_OPTIONS = `--max-old-space-size=${memoryLimit}`;
+	echo(chalk.yellow(`INFO: Setting NODE_OPTIONS to --max-old-space-size=${memoryLimit}MB`));
+} else {
+	echo(chalk.gray(`INFO: Using existing NODE_OPTIONS: ${process.env.NODE_OPTIONS}`));
+}
+
 // #endregion ===== Configuration =====
 
 // #region ===== Helper Functions =====
@@ -93,6 +103,7 @@ printDivider();
 
 // 1. Local Application Pre-build
 echo(chalk.yellow('INFO: Starting local application pre-build...'));
+echo(chalk.gray(`INFO: Node.js memory limit: ${process.env.NODE_OPTIONS || 'Not set'}`));
 startTimer('package_build');
 
 echo(chalk.yellow('INFO: Running pnpm install and build...'));
