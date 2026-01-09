@@ -22,6 +22,7 @@ WORKDIR /home/node
 
 COPY ./compiled /usr/local/lib/node_modules/n8n
 COPY docker/images/n8n/docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
 
 # This version of npm has the fix for glob
 RUN npm install -g npm@11.6.4
