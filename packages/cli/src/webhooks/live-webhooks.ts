@@ -21,7 +21,6 @@ import * as WebhookHelpers from '@/webhooks/webhook-helpers';
 import { WebhookService } from '@/webhooks/webhook.service';
 import * as WorkflowExecuteAdditionalData from '@/workflow-execute-additional-data';
 import { WorkflowStaticDataService } from '@/workflows/workflow-static-data.service';
-import { ExternalWorkflowsService } from '@/workflows/external-workflows.service';
 
 /**
  * Service for handling the execution of live webhooks, i.e. webhooks
@@ -36,7 +35,6 @@ export class LiveWebhooks implements IWebhookManager {
 		private readonly webhookService: WebhookService,
 		private readonly workflowRepository: WorkflowRepository,
 		private readonly workflowStaticDataService: WorkflowStaticDataService,
-		private readonly externalWorkflowsService: ExternalWorkflowsService,
 	) {}
 
 	async getWebhookMethods(path: string) {
@@ -123,44 +121,6 @@ export class LiveWebhooks implements IWebhookManager {
 			nodes,
 			connections,
 		};
-
-		// Check if workflow has tenant dynamic credentials
-		const hasTenantDynamicCreds = await this.externalWorkflowsService.hasTenantDynamicCredentials(
-			webhook.workflowId,
-		);
-
-		if (hasTenantDynamicCreds) {
-			// If workflow has tenant dynamic credentials, only execute for tenants
-			// Get all tenants that have all required credentials for this workflow
-			const tenantsWithCompleteCredentials =
-				await this.externalWorkflowsService.getTenantsWithCompleteCredentials(webhook.workflowId);
-
-			if (tenantsWithCompleteCredentials.length > 0) {
-				this.logger.info(
-					`Workflow ${webhook.workflowId} has tenant dynamic credentials. Executing for ${tenantsWithCompleteCredentials.length} tenants only, skipping original webhook execution`,
-				);
-
-				// Execute workflow for each tenant asynchronously
-				for (const tenantId of tenantsWithCompleteCredentials) {
-					void this.externalWorkflowsService
-						.runWorkflow(webhook.workflowId, tenantId)
-						.catch((error) => {
-							this.logger.error(
-								`Failed to execute workflow ${webhook.workflowId} for tenant ${tenantId}: ${error}`,
-							);
-						});
-				}
-			} else {
-				this.logger.warn(
-					`Workflow ${webhook.workflowId} has tenant dynamic credentials but no tenants with complete credentials found. Skipping execution.`,
-				);
-			}
-
-			// Return a default response without executing the original workflow
-			return {
-				noWebhookResponse: true,
-			};
-		}
 
 		// If workflow doesn't have tenant dynamic credentials, execute normally
 		// Create Workflow object with original credentials for the main webhook execution

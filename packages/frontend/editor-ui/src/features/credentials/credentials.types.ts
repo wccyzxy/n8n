@@ -17,6 +17,8 @@ export interface ICredentialsResponse extends ICredentialsEncrypted {
 	isGlobal?: boolean;
 	isResolvable?: boolean;
 	isTenantDynamic?: boolean;
+	tenantId?: string;
+	parent?: string | null;
 }
 
 export interface IUsedCredential {
@@ -37,6 +39,8 @@ export interface ICredentialsDecryptedResponse extends ICredentialsBase, ICreden
 	id: string;
 	isResolvable?: boolean;
 	isTenantDynamic?: boolean;
+	tenantId?: string;
+	parent?: string | null;
 }
 
 export interface ICredentialTypeMap {

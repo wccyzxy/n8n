@@ -141,9 +141,11 @@ export declare namespace CredentialRequest {
 	type Create = AuthenticatedRequest<
 		{},
 		{},
-		{ type: string; name: string; data: ICredentialDataDecryptedObject },
+		{ type: string; name: string; data: ICredentialDataDecryptedObject; parent?: string },
 		{}
 	>;
+
+	type Get = AuthenticatedRequest<{ id: string }, {}, {}, Record<string, string>>;
 
 	type Delete = AuthenticatedRequest<{ id: string }, {}, {}, Record<string, string>>;
 

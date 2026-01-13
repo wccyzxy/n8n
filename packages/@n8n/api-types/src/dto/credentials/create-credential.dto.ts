@@ -11,4 +11,5 @@ export class CreateCredentialDto extends Z.class({
 	isResolvable: z.boolean().optional(),
 	isTenantDynamic: z.boolean().optional(),
 	tenantId: z.string().max(128).optional(),
+	parent: z.string().max(36).optional(),
 }) {}

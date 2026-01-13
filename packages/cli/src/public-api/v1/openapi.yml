@@ -44,6 +44,10 @@ paths:
     $ref: './handlers/credentials/spec/paths/credentials.id.yml'
   /credentials/schema/{credentialTypeName}:
     $ref: './handlers/credentials/spec/paths/credentials.schema.id.yml'
+  /credentials/{id}/token:
+    $ref: './handlers/credentials/spec/paths/credentials.id.token.yml'
+  /credentials/{id}/connected:
+    $ref: './handlers/credentials/spec/paths/credentials.id.connected.yml'
   /credentials/{id}/transfer:
     $ref: './handlers/credentials/spec/paths/credentials.id.transfer.yml'
   /executions:

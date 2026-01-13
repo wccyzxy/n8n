@@ -38,9 +38,9 @@ require('reflect-metadata');
 if (process.env.E2E_TESTS !== 'true') {
 	// Loading dotenv early ensures that `process.env` is up-to-date everywhere in code
 	// Load .env from project root (three levels up from bin/n8n: bin -> cli -> packages -> root)
-	// const envPath = path.resolve(__dirname, '../../../.env');
-	// require('dotenv').config({ path: envPath, quiet: true });
-	require('dotenv').config({ quiet: true });
+	const envPath = path.resolve(__dirname, '../../../.env');
+	require('dotenv').config({ path: envPath, quiet: true });
+	// require('dotenv').config({ quiet: true });
 }
 
 // Load config early to ensure `N8N_CONFIG_FILES` values are populated into `GlobalConfig`

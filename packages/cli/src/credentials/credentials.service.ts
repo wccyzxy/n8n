@@ -924,6 +924,7 @@ export class CredentialsService {
 			isResolvable: opts.isResolvable ?? false,
 			isTenantDynamic: opts.isTenantDynamic ?? false,
 			tenantId: opts.tenantId ?? '',
+			parent: opts.parent ?? null,
 		});
 
 		const { shared, ...credential } = await this.save(
